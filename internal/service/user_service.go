@@ -24,6 +24,10 @@ func (us *UserService) GetUserByID(userID string) (*model.User, error) {
 	return us.UserRepository.GetUserByID(userID)
 }
 
-func (us *UserService) AddUser(name, email, password string) error {
-	return us.UserRepository.AddUser(name, email, password)
+func (us *UserService) GetUserByEmail(email string) (*model.User, error) {
+	return us.UserRepository.GetUserByEmail(email)
+}
+
+func (us *UserService) CreateUser(user model.UserRequest) error {
+	return us.UserRepository.CreateUser(user)
 }

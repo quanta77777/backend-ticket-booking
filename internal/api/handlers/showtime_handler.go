@@ -19,29 +19,38 @@ func NewShowtimeHandler(showtimeService *service.ShowtimeService) *ShowtimeHandl
 }
 
 func (mh *ShowtimeHandler) GetShowtimeByDay(c *gin.Context) {
-	var request struct {
-		Day     string `form:"day" binding:"required"`
-		MovieID int    `form:"movie_id"`
-	}
-	if err := c.ShouldBindQuery(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"errorr": err.Error()})
-		return
-	}
-	day, err := time.Parse("2006-01-02", request.Day)
+	// Retrieve and validate the day query parameter
+	dayStr := c.Query("day")
+	day, err := time.Parse("2006-01-02", dayStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
-	var showtimes []model.Showtime
-	if request.MovieID != 0 {
-		showtimes, err = mh.ShowtimeService.GetShowtimeByDayAndMovieID(day, request.MovieID)
 
-	} else {
-		showtimes, err = mh.ShowtimeService.GetAllShowtimeByDay(day)
-
+	// Retrieve the movie_id query parameter
+	movieIDStr := c.Query("movie_id")
+	var movieID int
+	if movieIDStr != "" {
+		movieID, err = strconv.Atoi(movieIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid movie_id"})
+			return
+		}
 	}
+
+	var showtimes []model.Showtime
+
+	// Retrieve showtimes based on the presence of MovieID
+	showtimes, err = mh.ShowtimeService.GetShowtimeByDayAndMovieID(day, movieID)
+	// if movieID > 0 {
+	// 	showtimes, err = mh.ShowtimeService.GetShowtimeByDayAndMovieID(day, movieID)
+	// }
+	//  else {
+	// 	showtimes, err = mh.ShowtimeService.GetAllShowtimeByDay(day)
+	// }
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

@@ -8,7 +8,7 @@ import (
 
 type ReviewService interface {
 	CreateReview(review model.ReviewRequest) error
-	GetReviewsByMovieID(movieID int) ([]model.Review, error)
+	GetReviewsByMovieID(movieID, limit, offset int) ([]model.Review, error)
 	GetAverageRatingAndCountByMovieID(movieID int) (float64, int, error)
 }
 
@@ -44,8 +44,8 @@ func (s *reviewService) CreateReview(review model.ReviewRequest) error {
 	return s.reviewRepo.CreateReview(review)
 }
 
-func (s *reviewService) GetReviewsByMovieID(movieID int) ([]model.Review, error) {
-	return s.reviewRepo.GetReviewsByMovieID(movieID)
+func (s *reviewService) GetReviewsByMovieID(movieID, limit, offset int) ([]model.Review, error) {
+	return s.reviewRepo.GetReviewsByMovieID(movieID, limit, offset)
 }
 
 func (s *reviewService) GetAverageRatingAndCountByMovieID(movieID int) (float64, int, error) {

@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"net/http"
-	// "movie-ticket-booking/models"
+	"movie-ticket-booking/internal/model"
 	"movie-ticket-booking/internal/service"
+	"movie-ticket-booking/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,54 +14,68 @@ type AuthHandler struct {
 	UserService *service.UserService
 }
 
-// func (h *AuthHandler) Register(c *gin.Context) {
-//     var user models.User
-//     if err := c.ShouldBindJSON(&user); err != nil {
-//         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-//         return
-//     }
+func (h *AuthHandler) Register(c *gin.Context) {
+	var userRequest model.UserRequest
 
-//     hashedPassword, err := h.AuthService.HashPassword(user.Password)
-//     if err != nil {
-//         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//         return
-//     }
-//     user.Password = hashedPassword
+	if err := c.ShouldBind(&userRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-//     if err := h.UserService.CreateUser(&user); err != nil {
-//         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//         return
-//     }
+	hashedPassword, err := h.AuthService.HashPassword(userRequest.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	userRequest.Password = hashedPassword
 
-//     c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
-// }
+	file, header, err := c.Request.FormFile("image")
+	if err == nil {
+		defer file.Close()
+		imageInfo, err := utils.UploadToCloudinary(file, header.Filename, "user-avatar")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		userRequest.ImageURL = imageInfo.ImageURL
+		userRequest.ImageID = imageInfo.PublicID
 
-// func (h *AuthHandler) Login(c *gin.Context) {
-//     var user models.User
-//     if err := c.ShouldBindJSON(&user); err != nil {
-//         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-//         return
-//     }
+	}
 
-//     storedUser, err := h.UserService.GetUserByEmail(user.Email)
-//     if err != nil {
-//         c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
-//         return
-//     }
+	if err := h.UserService.CreateUser(userRequest); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-//     if !h.AuthService.CheckPasswordHash(user.Password, storedUser.Password) {
-//         c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
-//         return
-//     }
+	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+}
 
-//     tokenDetails, err := h.AuthService.CreateToken(storedUser.Email, storedUser.Role)
-//     if err != nil {
-//         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//         return
-//     }
+func (h *AuthHandler) Login(c *gin.Context) {
+	var user model.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-//     c.JSON(http.StatusOK, tokenDetails)
-// }
+	storedUser, err := h.UserService.GetUserByEmail(user.Email)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	if !h.AuthService.CheckPasswordHash(user.Password, storedUser.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	tokenDetails, err := h.AuthService.CreateToken(storedUser.Email, storedUser.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tokenDetails)
+}
 
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var tokenRequest struct {

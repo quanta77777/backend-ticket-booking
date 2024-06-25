@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"movie-ticket-booking/internal/model"
 	"movie-ticket-booking/internal/service"
+	"movie-ticket-booking/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,22 +36,27 @@ func (uh *UserHandler) GetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (uh *UserHandler) AddUser(c *gin.Context) {
-	var userReq struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	if err := c.BindJSON(&userReq); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+func (uh *UserHandler) CreateUser(c *gin.Context) {
+	var userRequest model.UserRequest
+
+	if err := c.ShouldBind(&userRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if userReq.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Password is required"})
-		return
+	file, header, err := c.Request.FormFile("image")
+	if err == nil {
+		defer file.Close()
+		imageInfo, err := utils.UploadToCloudinary(file, header.Filename, "user-avatar")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		userRequest.ImageURL = imageInfo.ImageURL
+		userRequest.ImageID = imageInfo.PublicID
+
 	}
 
-	err := uh.UserService.AddUser(userReq.Name, userReq.Email, userReq.Password)
+	err = uh.UserService.CreateUser(userRequest)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add user"})

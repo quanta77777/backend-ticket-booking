@@ -118,9 +118,9 @@ func (mr *ShowTimeRepository) GetShowtimeByDayAndMovieID(day time.Time, movieID 
 	query := `
         SELECT showtime_id, cinema_id, branch_id, theater_id, movie_id, start_time, end_time, created_at
         FROM showtime
-        WHERE start_time >= ? AND movie_id = ? ORDER BY start_time
+        WHERE start_time >= ? AND movie_id = ? AND DATE(start_time) = ? ORDER BY start_time
     `
-	rows, err := mr.DB.Query(query, currentTimePlus5.Format("2006-01-02 15:04:05"), movieID)
+	rows, err := mr.DB.Query(query, currentTimePlus5.Format("2006-01-02 15:04:05"), movieID, day.Format("2006-01-02"))
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}
@@ -156,8 +156,10 @@ func (mr *ShowTimeRepository) GetShowtimeByDayAndMovieID(day time.Time, movieID 
 }
 
 func (mr *ShowTimeRepository) GetShowtimWithBranch(branchID int, day time.Time) ([]model.Showtime, error) {
+	currentTimePlus5 := time.Now().Add(5 * time.Minute)
+	fmt.Printf("Current Time Plus 5 Minutes: %s\n", currentTimePlus5)
 	var showtimes []model.Showtime
-	rows, err := mr.DB.Query("SELECT showtime_id, cinema_id, branch_id,  theater_id, movie_id, start_time, end_time, created_at FROM showtime WHERE branch_id = ? AND DATE(start_time) = ?", branchID, day.Format("2006-01-02"))
+	rows, err := mr.DB.Query("SELECT showtime_id, cinema_id, branch_id,  theater_id, movie_id, start_time, end_time, created_at FROM showtime WHERE start_time >= ? AND branch_id = ? AND DATE(start_time) = ?  ORDER BY start_time", currentTimePlus5.Format("2006-01-02 15:04:05"), branchID, day.Format("2006-01-02"))
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}

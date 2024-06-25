@@ -8,7 +8,7 @@ import (
 
 type ReviewRepository interface {
 	CreateReview(review model.ReviewRequest) error
-	GetReviewsByMovieID(movieID int) ([]model.Review, error)
+	GetReviewsByMovieID(movieID, limit, offset int) ([]model.Review, error)
 	UserHasTicketForMovie(userID, movieID int) (bool, error)
 	HasUserReviewedMovie(userID, movieID int) (bool, error)
 	GetAverageRatingAndCountByMovieID(movieID int) (float64, int, error)
@@ -42,13 +42,14 @@ func (r *reviewRepository) CreateReview(review model.ReviewRequest) error {
 	return err
 }
 
-func (r *reviewRepository) GetReviewsByMovieID(movieID int) ([]model.Review, error) {
+func (r *reviewRepository) GetReviewsByMovieID(movieID, limit, offset int) ([]model.Review, error) {
 	query := `
         SELECT review_id, user_id, movie_id, rating, comment, COALESCE(image_url, ''), COALESCE(image_id, ''), created_at 
         FROM review
         WHERE movie_id = ?
+		LIMIT ? OFFSET ?
     `
-	rows, err := r.db.Query(query, movieID)
+	rows, err := r.db.Query(query, movieID, limit, offset)
 	if err != nil {
 		return nil, err
 	}

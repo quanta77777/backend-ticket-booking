@@ -57,8 +57,10 @@ func (s *AuthService) CreateToken(email, role string) (*model.TokenDetails, erro
 	}
 
 	return &model.TokenDetails{
-		AccessToken:  accessTokenString,
-		RefreshToken: refreshTokenString,
+		AccessToken:         accessTokenString,
+		RefreshToken:        refreshTokenString,
+		AccessTokenExpires:  accessTokenExpiry,
+		RefreshTokenExpires: refreshTokenExpiry,
 	}, nil
 }
 

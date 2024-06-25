@@ -70,9 +70,11 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 	// Define routes
 	router.GET("/api/users", userHandler.GetAllUsers)
 	router.GET("/api/users/:id", userHandler.GetUserByID)
-	router.POST("/api/users", userHandler.AddUser)
+	router.POST("/api/users", userHandler.CreateUser)
 
 	router.POST("/refresh", authHandler.Refresh)
+	router.POST("/api/auth/register", authHandler.Register)
+	router.POST("/api/auth/login", authHandler.Login)
 
 	router.POST("/api/cinema", middleware.FileUploadMiddleware(), cinemaHandler.AddCinema)
 	router.GET("/api/cinema", cinemaHandler.GetAllCinema)
@@ -117,13 +119,14 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 	router.POST("/api/ticket/seat", ticketHandler.AddSeatWithTicketId)
 	router.GET("/api/ticket/user/:user_id/movie/:movie_id", ticketHandler.UserHasTicketForMovie)
 
-	router.POST("/api/movies/:movie_id/review", reviewHandler.CreateReview)
+	router.POST("/api/movies/review", reviewHandler.CreateReview)
 	router.GET("/api/movies/:movie_id/reviews", reviewHandler.GetReviewsByMovieID)
 	router.GET("/api/movies/:movie_id/average_rating", reviewHandler.GetAverageRatingAndCountByMovieID)
 
-	authorized := router.Group("/admin")
+	authorized := router.Group("/api/admin")
 	authorized.Use(middleware.JWTAuthMiddleware(authService), middleware.CheckRole("admin"))
 	authorized.GET("/dashboard", func(c *gin.Context) {
+
 		c.JSON(http.StatusOK, gin.H{"message": "Welcome to admin dashboard!"})
 	})
 

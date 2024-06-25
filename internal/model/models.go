@@ -120,7 +120,17 @@ type User struct {
 	Email     string `json:"email"`
 	Password  string `json:"password"`
 	Role      string `json:"role"`
+	ImageUrl  string `json:"image_url"`
+	ImageID   string `json:"image_id"`
 	CreatedAt string `json:"created_at"`
+}
+
+type UserRequest struct {
+	Name     string `form:"name" binding:"required"`
+	Email    string `form:"email" binding:"required"`
+	Password string `form:"password" binding:"required"`
+	ImageURL string `form:"image_url" `
+	ImageID  string `form:"image_id"`
 }
 
 type Ticket struct {
@@ -145,6 +155,8 @@ type TicketSeat struct {
 }
 
 type TokenDetails struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken         string `json:"access_token"`
+	RefreshToken        string `json:"refresh_token"`
+	AccessTokenExpires  int64  `json:"access_tokenExpiry"`
+	RefreshTokenExpires int64  `json:"refresh_tokenExpiry"`
 }

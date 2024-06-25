@@ -54,13 +54,35 @@ func (api *ReviewHandler) GetReviewsByMovieID(c *gin.Context) {
 		return
 	}
 
-	reviews, err := api.reviewService.GetReviewsByMovieID(movieID)
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		limit = 2 // Giá trị mặc định nếu không có limit
+	} else if limit <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit"})
+		return
+	}
+
+	offset, err := strconv.Atoi(c.Query("offset"))
+	if err != nil {
+		offset = 0 // Giá trị mặc định nếu không có offset
+	} else if offset < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offset"})
+		return
+	}
+
+	reviews, err := api.reviewService.GetReviewsByMovieID(movieID, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, reviews)
+	nextPage := offset/limit + 1
+	response := gin.H{
+		"reviews":  reviews,
+		"nextPage": nextPage,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (api *ReviewHandler) GetAverageRatingAndCountByMovieID(c *gin.Context) {
