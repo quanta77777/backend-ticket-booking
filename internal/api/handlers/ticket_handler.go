@@ -86,3 +86,35 @@ func (h *TicketHandler) UserHasTicketForMovie(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"has_ticket": hasTicket})
 }
+
+func (h *TicketHandler) GetTicketByUserID(c *gin.Context) {
+	userID, err := strconv.Atoi(c.Param("user_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	tickets, err := h.ticketService.GetTicketByUserId(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tickets)
+}
+
+func (h *TicketHandler) GetSeatByTicketId(c *gin.Context) {
+	ticketID, err := strconv.Atoi(c.Param("ticket_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ticket ID"})
+		return
+	}
+
+	tickets, err := h.ticketService.GetSeatByTicketId(ticketID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tickets)
+}

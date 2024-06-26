@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"movie-ticket-booking/internal/model"
+	"time"
 )
 
 type TicketRepository struct {
@@ -70,4 +71,59 @@ func (r *TicketRepository) UserHasTicketForMovie(userID, movieID int) (bool, err
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (r *TicketRepository) GetTicketByUserId(userID int) ([]model.Ticket, error) {
+	query := `
+        SELECT *
+        FROM ticket
+        WHERE user_id = ? 
+    `
+	rows, err := r.db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tickets []model.Ticket
+	for rows.Next() {
+		var ticket model.Ticket
+		var createdAtBytes []byte
+		if err := rows.Scan(&ticket.TicketID, &ticket.UserID, &ticket.ShowtimeID, &ticket.MovieID, &ticket.Price, &createdAtBytes); err != nil {
+			return nil, err
+		}
+		createdAt, err := time.Parse("2006-01-02 15:04:05", string(createdAtBytes))
+		if err != nil {
+			return nil, err
+		}
+		ticket.CreatedAt = createdAt
+		tickets = append(tickets, ticket)
+	}
+	return tickets, nil
+
+}
+
+func (r *TicketRepository) GetSeatByTicketId(ticketID int) ([]model.TicketSeat, error) {
+	query := `
+        SELECT *
+        FROM ticket_seat
+        WHERE ticket_id = ? 
+    `
+	rows, err := r.db.Query(query, ticketID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tickets []model.TicketSeat
+	for rows.Next() {
+		var ticket model.TicketSeat
+		if err := rows.Scan(&ticket.TicketSeatID, &ticket.TicketID, &ticket.SeatID); err != nil {
+			return nil, err
+		}
+
+		tickets = append(tickets, ticket)
+	}
+	return tickets, nil
+
 }

@@ -25,3 +25,11 @@ func (s *TicketService) AddSeatWithTicketId(ticket *model.TicketSeat) error {
 func (s *TicketService) UserHasTicketForMovie(userID, movieID int) (bool, error) {
 	return s.ticketRepo.UserHasTicketForMovie(userID, movieID)
 }
+
+func (s *TicketService) GetTicketByUserId(userID int) ([]model.Ticket, error) {
+	return s.ticketRepo.GetTicketByUserId(userID)
+}
+
+func (s *TicketService) GetSeatByTicketId(ticketID int) ([]model.TicketSeat, error) {
+	return s.ticketRepo.GetSeatByTicketId(ticketID)
+}

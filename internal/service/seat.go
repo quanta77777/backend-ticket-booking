@@ -41,3 +41,7 @@ func (ss *SeatService) GetSeatsWithReservationStatusAndPrices(theaterID, showtim
 func (ss *SeatService) CreateReservation(reservation model.SeatReservation) error {
 	return ss.SeatService.CreateReservation(reservation)
 }
+
+func (ss *SeatService) GetSeatByTicketId(ticketID int) ([]model.TicketSeat, error) {
+	return ss.SeatService.GetSeatByTicketId(ticketID)
+}

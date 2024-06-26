@@ -91,3 +91,19 @@ func (sh *SeatHandler) ReserveSeat(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Reservation successful"})
 }
+
+func (sh *SeatHandler) GetSeatByTicketId(c *gin.Context) {
+	ticketID, err := strconv.Atoi(c.Param("ticket_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ticket ID"})
+		return
+	}
+
+	seats, err := sh.SeatHandler.GetSeatByTicketId(ticketID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, seats)
+}

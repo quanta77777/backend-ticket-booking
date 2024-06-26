@@ -230,3 +230,40 @@ func (mr *ShowTimeRepository) GetShowtimWithCinema(cinemaID int, day time.Time) 
 
 	return showtimes, nil
 }
+
+func (mr *ShowTimeRepository) GetShowtimByID(showtimeID int) ([]model.Showtime, error) {
+	var showtimes []model.Showtime
+	rows, err := mr.DB.Query("SELECT showtime_id, cinema_id, branch_id,  theater_id, movie_id, start_time, end_time, created_at FROM showtime WHERE showtime_id = ?", showtimeID)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var showtime model.Showtime
+		var startTimeStr, endTimeStr string
+		var createdAtBytes []byte
+		err := rows.Scan(&showtime.ShowtimeID, &showtime.CinemaID, &showtime.BranchID, &showtime.TheaterID, &showtime.MovieID, &startTimeStr, &endTimeStr, &createdAtBytes)
+		if err != nil {
+			return nil, errors.New(err.Error())
+		}
+		showtime.StartTime, err = time.Parse("2006-01-02 15:04:05", startTimeStr)
+		if err != nil {
+			return nil, errors.New(err.Error())
+		}
+		showtime.EndTime, err = time.Parse("2006-01-02 15:04:05", endTimeStr)
+		if err != nil {
+			return nil, errors.New(err.Error())
+		}
+		createdAt, err := time.Parse("2006-01-02 15:04:05", string(createdAtBytes))
+		if err != nil {
+			return nil, err
+		}
+		showtime.CreatedAt = createdAt
+		showtimes = append(showtimes, showtime)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	return showtimes, nil
+}

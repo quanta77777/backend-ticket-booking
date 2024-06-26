@@ -34,3 +34,7 @@ func (ms *ShowtimeService) GetShowtimeWithBranch(branchID int, day time.Time) ([
 func (ms *ShowtimeService) GetShowtimeWithCinema(cinemaID int, day time.Time) ([]model.Showtime, error) {
 	return ms.ShowtimeRepository.GetShowtimWithCinema(cinemaID, day)
 }
+
+func (ms *ShowtimeService) GetShowtimByID(showtimeID int) ([]model.Showtime, error) {
+	return ms.ShowtimeRepository.GetShowtimByID(showtimeID)
+}

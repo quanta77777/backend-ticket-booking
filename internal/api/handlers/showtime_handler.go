@@ -114,6 +114,23 @@ func (mh *ShowtimeHandler) GetShowtimeWithCinema(c *gin.Context) {
 
 }
 
+func (mh *ShowtimeHandler) GetShowtimeByID(c *gin.Context) {
+	showtimeID, err := strconv.Atoi(c.Param("showtime_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid showtime ID"})
+		return
+	}
+
+	var showtimes []model.Showtime
+	showtimes, err = mh.ShowtimeService.GetShowtimByID(showtimeID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, showtimes)
+
+}
+
 func (mh *ShowtimeHandler) AddShowtime(c *gin.Context) {
 	var ShowtimeReq struct {
 		BranchID  int       `json:"branch_id"`

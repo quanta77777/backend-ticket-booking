@@ -19,7 +19,9 @@ func NewMovieHandler(movieService *service.MovieService) *MovieHandler {
 }
 
 func (mh *MovieHandler) GetAllMovie(c *gin.Context) {
-	movies, err := mh.MovieService.GetAllMovie()
+	status := c.Query("status")
+
+	movies, err := mh.MovieService.GetAllMovie(status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -96,6 +96,7 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 	router.POST("/api/seat", seatHandler.AddSeat)
 	router.GET("/api/seat/theater/:id", seatHandler.GetSeatBytheaterID)
 	router.GET("/api/seats", seatHandler.GetSeatsWithReservationStatusAndPrices)
+	router.GET("/api/seat/ticket/:ticket_id", seatHandler.GetSeatByTicketId)
 	router.POST("/api/reserve-seat", seatHandler.ReserveSeat)
 
 	router.POST("/api/price", priceHandler.CreatePriceForShowtime)
@@ -106,6 +107,7 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 	router.POST("/api/showtime", showtimeHandler.AddShowtime)
 	router.GET("/api/showtime", showtimeHandler.GetShowtimeByDay)
 	router.GET("/api/showtime/branch/:id", showtimeHandler.GetShowtimeWithBranch)
+	router.GET("/api/showtime/:showtime_id", showtimeHandler.GetShowtimeByID)
 	router.GET("/api/showtime/cinema/:id", showtimeHandler.GetShowtimeWithCinema)
 
 	router.GET("/api/movie", movieHandler.GetAllMovie)
@@ -118,6 +120,7 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 	router.POST("/api/ticket/product", ticketHandler.AddProductWithTicketId)
 	router.POST("/api/ticket/seat", ticketHandler.AddSeatWithTicketId)
 	router.GET("/api/ticket/user/:user_id/movie/:movie_id", ticketHandler.UserHasTicketForMovie)
+	router.GET("/api/ticket/user/:user_id", ticketHandler.GetTicketByUserID)
 
 	router.POST("/api/movies/review", reviewHandler.CreateReview)
 	router.GET("/api/movies/:movie_id/reviews", reviewHandler.GetReviewsByMovieID)

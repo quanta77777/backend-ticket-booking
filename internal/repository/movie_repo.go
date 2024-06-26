@@ -44,27 +44,44 @@ func (mr *MovieRepository) AddMovie(Title, Director, Genre string, Duration int,
 	return movie, nil
 }
 
-func (mr *MovieRepository) GetAllMovie() ([]model.Movie, error) {
-	rows, err := mr.DB.Query("SELECT * FROM movie")
+func (mr *MovieRepository) GetAllMovie(status string) ([]model.Movie, error) {
+	var query string
+	var args []interface{}
+
+	switch status {
+	case "now":
+		query = "SELECT * FROM movie WHERE release_date <= NOW() AND end_date >= NOW()"
+	case "upcoming":
+		query = "SELECT * FROM movie WHERE release_date > NOW()"
+	default:
+		query = "SELECT * FROM movie"
+	}
+
+	rows, err := mr.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	var movies []model.Movie
 	for rows.Next() {
 		var movie model.Movie
-		var createdAtBytes []byte
-		err := rows.Scan(&movie.MovieID, &movie.Title, &movie.Director, &movie.Genre, &movie.Duration, &movie.ImageURL, &movie.ImageID, &movie.Discription, &movie.ReleaseDate, &movie.EndDate, &createdAtBytes)
+		var createdAtStr string
+		err := rows.Scan(&movie.MovieID, &movie.Title, &movie.Director, &movie.Genre, &movie.Duration, &movie.ImageURL, &movie.ImageID, &movie.Discription, &movie.ReleaseDate, &movie.EndDate, &movie.Trailer, &createdAtStr)
 		if err != nil {
 			return nil, err
 		}
-		createdAt, err := time.Parse("2006-01-02 15:04:05", string(createdAtBytes))
+
+		// Parse createdAtStr thành time.Time
+		createdAt, err := time.Parse("2006-01-02 15:04:05", createdAtStr)
 		if err != nil {
 			return nil, err
 		}
 		movie.CreatedAt = createdAt
+
 		movies = append(movies, movie)
 	}
+
 	return movies, nil
 }
 
@@ -72,7 +89,7 @@ func (mr *MovieRepository) GetMovieByID(movieID int) (*model.Movie, error) {
 	var movie model.Movie
 	var createdAtBytes []byte
 	err := mr.DB.QueryRow("SELECT * FROM movie WHERE movie_id = ?", movieID).
-		Scan(&movie.MovieID, &movie.Title, &movie.Director, &movie.Genre, &movie.Duration, &movie.ImageURL, &movie.ImageID, &movie.Discription, &movie.ReleaseDate, &movie.EndDate, &createdAtBytes)
+		Scan(&movie.MovieID, &movie.Title, &movie.Director, &movie.Genre, &movie.Duration, &movie.ImageURL, &movie.ImageID, &movie.Discription, &movie.ReleaseDate, &movie.EndDate, &movie.Trailer, &createdAtBytes)
 	if err != nil {
 		return nil, err
 	}

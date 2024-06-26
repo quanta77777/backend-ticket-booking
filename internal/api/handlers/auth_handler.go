@@ -73,8 +73,14 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, tokenDetails)
+	response := struct {
+		User         *model.User         `json:"user"`
+		TokenDetails *model.TokenDetails `json:"token_details"`
+	}{
+		User:         storedUser,
+		TokenDetails: tokenDetails,
+	}
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *AuthHandler) Refresh(c *gin.Context) {

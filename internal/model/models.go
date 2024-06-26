@@ -42,6 +42,7 @@ type Movie struct {
 	Discription string    `json:"discription"`
 	ReleaseDate string    `json:"release_date"`
 	EndDate     string    `json:"end_date"`
+	Trailer     string    `json:"trailer"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 type MovieRequest struct {

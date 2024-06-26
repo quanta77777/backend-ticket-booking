@@ -67,14 +67,14 @@ func (ur *UserRepository) CreateUser(user model.UserRequest) error {
 
 func (r *UserRepository) GetUserByEmail(email string) (*model.User, error) {
 	query := `
-        SELECT user_id, name, email, password, role
+        SELECT user_id, name, email, password, role, COALESCE(image_url, ''), COALESCE(image_id, '')
         FROM user
         WHERE email = ?
     `
 	row := r.DB.QueryRow(query, email)
 
 	var user model.User
-	if err := row.Scan(&user.UserID, &user.Name, &user.Email, &user.Password, &user.Role); err != nil {
+	if err := row.Scan(&user.UserID, &user.Name, &user.Email, &user.Password, &user.Role, &user.ImageUrl, &user.ImageID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("user not found")
 		}

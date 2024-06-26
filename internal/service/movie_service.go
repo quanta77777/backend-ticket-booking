@@ -26,8 +26,8 @@ func (ms *MovieService) AddMovie(Title, Director, Genre string, Duration int, Im
 	return movie, nil
 }
 
-func (ms *MovieService) GetAllMovie() ([]model.Movie, error) {
-	return ms.MovieRepository.GetAllMovie()
+func (ms *MovieService) GetAllMovie(status string) ([]model.Movie, error) {
+	return ms.MovieRepository.GetAllMovie(status)
 }
 
 func (ms *MovieService) GetMovieByID(movieID int) (*model.Movie, error) {

@@ -95,3 +95,28 @@ func (sr *SeatRopository) CreateReservation(reservation model.SeatReservation) e
 	}
 	return nil
 }
+
+func (sr *SeatRopository) GetSeatByTicketId(ticketID int) ([]model.TicketSeat, error) {
+	query := `
+        SELECT *
+        FROM ticket_seat
+        WHERE ticket_id = ? 
+    `
+	rows, err := sr.DB.Query(query, ticketID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var seats []model.TicketSeat
+	for rows.Next() {
+		var seat model.TicketSeat
+		if err := rows.Scan(&seat.TicketSeatID, &seat.TicketID, &seat.SeatID); err != nil {
+			return nil, err
+		}
+
+		seats = append(seats, seat)
+	}
+	return seats, nil
+
+}
